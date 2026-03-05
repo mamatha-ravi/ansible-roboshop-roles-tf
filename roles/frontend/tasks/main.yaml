@@ -1,0 +1,36 @@
+
+  - name: enable nginx
+    ansible.builtin.command: dnf module enable nginx:1.24 -y
+    
+  - name: install nginx
+    ansible.builtin.dnf:
+      name: nginx
+      state: present
+
+  - name: delete file
+    ansible.builtin.file:
+      path: /usr/share/nginx/html/*
+      state: absent  
+
+  - name: download frontend
+    ansible.builtin.get_url:
+      url: https://roboshop-artifacts.s3.amazonaws.com/frontend-v3.zip
+      dest: /tmp/frontend.zip
+      
+  - name: unzip frontend file
+    ansible.builtin.unarchive:
+      src: /tmp/frontend.zip
+      dest: /usr/share/nginx/html
+      remote_src: yes
+
+  - name: copy frontend sercice
+    throttle: 2
+    ansible.builtin.template:
+      src: nginx.conf.j2
+      dest: /etc/nginx/nginx.conf
+      notify: restart frontend   # it will take to handlers when change in copy happens
+
+ 
+
+  
+
